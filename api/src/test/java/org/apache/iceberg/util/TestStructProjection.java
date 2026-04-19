@@ -18,6 +18,7 @@
  */
 package org.apache.iceberg.util;
 
+import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.TestHelpers;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.types.Types.StructType;
 import org.junit.jupiter.api.Test;
 
 public class TestStructProjection {
@@ -33,12 +35,11 @@ public class TestStructProjection {
   public void testSubsetProjection() {
     Schema dataSchema =
         new Schema(
-            Types.NestedField.required(10, "id", Types.LongType.get()),
-            Types.NestedField.required(20, "name", Types.StringType.get()),
-            Types.NestedField.required(30, "value", Types.IntegerType.get()));
+            required(10, "id", Types.LongType.get()),
+            required(20, "name", Types.StringType.get()),
+            required(30, "value", Types.IntegerType.get()));
 
-    Schema projectedSchema =
-        new Schema(Types.NestedField.required(30, "value", Types.IntegerType.get()));
+    Schema projectedSchema = new Schema(required(30, "value", Types.IntegerType.get()));
 
     StructProjection projectedStructure = StructProjection.create(dataSchema, projectedSchema);
 
@@ -52,30 +53,28 @@ public class TestStructProjection {
 
   @Test
   public void testNestedProjection() {
-    Types.StructType dataCoordinateStruct =
-        Types.StructType.of(
-            Types.NestedField.required(100, "latitude", Types.DoubleType.get()),
-            Types.NestedField.required(200, "longitude", Types.DoubleType.get()));
-
-    Types.StructType dataAddressStruct =
-        Types.StructType.of(
-            Types.NestedField.required(10, "street", Types.StringType.get()),
-            Types.NestedField.required(20, "coordinates", dataCoordinateStruct));
-
     Schema dataSchema =
         new Schema(
-            Types.NestedField.required(1, "id", Types.LongType.get()),
-            Types.NestedField.required(2, "address", dataAddressStruct));
+            required(1, "id", Types.LongType.get()),
+            required(
+                2,
+                "address",
+                StructType.of(
+                    required(10, "street", Types.StringType.get()),
+                    required(
+                        20,
+                        "coordinates",
+                        StructType.of(
+                            required(100, "latitude", Types.DoubleType.get()),
+                            required(200, "longitude", Types.DoubleType.get()))))));
 
-    Types.StructType projectedCoordinateStruct =
-        Types.StructType.of(Types.NestedField.required(200, "longitude", Types.DoubleType.get()));
+    StructType projectedCoordinateStruct =
+        StructType.of(required(200, "longitude", Types.DoubleType.get()));
 
-    Types.StructType projectedAddressStruct =
-        Types.StructType.of(
-            Types.NestedField.required(20, "coordinates", projectedCoordinateStruct));
+    StructType projectedAddressStruct =
+        StructType.of(required(20, "coordinates", projectedCoordinateStruct));
 
-    Schema projectedSchema =
-        new Schema(Types.NestedField.required(2, "address", projectedAddressStruct));
+    Schema projectedSchema = new Schema(required(2, "address", projectedAddressStruct));
 
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
 
@@ -97,11 +96,11 @@ public class TestStructProjection {
 
   @Test
   public void testAllowMissingOptionalField() {
-    Schema dataSchema = new Schema(Types.NestedField.required(10, "id", Types.LongType.get()));
+    Schema dataSchema = new Schema(required(10, "id", Types.LongType.get()));
 
-    Types.StructType projectedStructType =
-        Types.StructType.of(
-            Types.NestedField.required(10, "id", Types.LongType.get()),
+    StructType projectedStructType =
+        StructType.of(
+            required(10, "id", Types.LongType.get()),
             Types.NestedField.optional(20, "name", Types.StringType.get()));
 
     StructProjection projection =
@@ -116,21 +115,21 @@ public class TestStructProjection {
 
   @Test
   public void testMapWithNestedValueFullMatch() {
-    Types.StructType coordinateStruct =
-        Types.StructType.of(
-            Types.NestedField.required(100, "latitude", Types.DoubleType.get()),
-            Types.NestedField.required(200, "longitude", Types.DoubleType.get()));
+    StructType coordinateStruct =
+        StructType.of(
+            required(100, "latitude", Types.DoubleType.get()),
+            required(200, "longitude", Types.DoubleType.get()));
 
     Schema dataSchema =
         new Schema(
-            Types.NestedField.required(1, "id", Types.LongType.get()),
-            Types.NestedField.required(
+            required(1, "id", Types.LongType.get()),
+            required(
                 2,
                 "address",
                 Types.MapType.ofRequired(3, 4, Types.StringType.get(), coordinateStruct)));
     Schema projectedSchema =
         new Schema(
-            Types.NestedField.required(
+            required(
                 2,
                 "address",
                 Types.MapType.ofRequired(3, 4, Types.StringType.get(), coordinateStruct)));
@@ -154,13 +153,10 @@ public class TestStructProjection {
   public void testListWithFullMatch() {
     Schema dataSchema =
         new Schema(
-            Types.NestedField.required(1, "id", Types.LongType.get()),
-            Types.NestedField.required(
-                2, "numbers", Types.ListType.ofRequired(3, Types.StringType.get())));
+            required(1, "id", Types.LongType.get()),
+            required(2, "numbers", Types.ListType.ofRequired(3, Types.StringType.get())));
     Schema projectedSchema =
-        new Schema(
-            Types.NestedField.required(
-                2, "numbers", Types.ListType.ofRequired(3, Types.StringType.get())));
+        new Schema(required(2, "numbers", Types.ListType.ofRequired(3, Types.StringType.get())));
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
 
     TestHelpers.Row row = TestHelpers.Row.of(1L, List.of("a", "b", "c"));
