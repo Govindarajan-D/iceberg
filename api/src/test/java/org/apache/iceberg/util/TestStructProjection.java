@@ -68,13 +68,16 @@ public class TestStructProjection {
                             required(100, "latitude", Types.DoubleType.get()),
                             required(200, "longitude", Types.DoubleType.get()))))));
 
-    StructType projectedCoordinateStruct =
-        StructType.of(required(200, "longitude", Types.DoubleType.get()));
-
-    StructType projectedAddressStruct =
-        StructType.of(required(20, "coordinates", projectedCoordinateStruct));
-
-    Schema projectedSchema = new Schema(required(2, "address", projectedAddressStruct));
+    Schema projectedSchema =
+        new Schema(
+            required(
+                2,
+                "address",
+                StructType.of(
+                    required(
+                        20,
+                        "coordinates",
+                        StructType.of(required(200, "longitude", Types.DoubleType.get()))))));
 
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
 
