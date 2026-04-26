@@ -326,6 +326,57 @@ public class TestStructProjection {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
+  public void testProjectMapWithNestedStructKey() {
+    StructType keyStruct = StructType.of(required(100, "region", Types.StringType.get()));
+
+    Schema dataSchema =
+        new Schema(
+            required(2, "data", Types.MapType.ofRequired(3, 4, keyStruct, Types.StringType.get())));
+    Schema projectedSchema =
+        new Schema(
+            required(2, "data", Types.MapType.ofRequired(3, 4, keyStruct, Types.StringType.get())));
+
+    StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
+    TestHelpers.Row key = TestHelpers.Row.of("US");
+    projection.wrap(TestHelpers.Row.of(Map.of(key, "A Country")));
+
+    assertThat(projection.size()).isEqualTo(1);
+    assertThat(projection.get(0, Map.class)).isEqualTo(Map.of(key, "A Country"));
+  }
+
+  @Test
+  public void testCreateThrowsForPartialMapKeyStructProjection() {
+    Schema dataSchema =
+        new Schema(
+            required(
+                1,
+                "delivery_map",
+                Types.MapType.ofRequired(
+                    2,
+                    3,
+                    StructType.of(
+                        required(100, "city", Types.StringType.get()),
+                        required(101, "zip", Types.IntegerType.get())),
+                    Types.StringType.get())));
+
+    Schema projectedSchema =
+        new Schema(
+            required(
+                1,
+                "delivery_map",
+                Types.MapType.ofRequired(
+                    2,
+                    3,
+                    StructType.of(required(100, "city", Types.StringType.get())),
+                    Types.StringType.get())));
+
+    assertThatThrownBy(() -> StructProjection.create(dataSchema, projectedSchema))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Cannot project a partial map key or value struct");
+  }
+
+  @Test
   public void testCreateThrowsForPartialListElementStructProjection() {
     Schema dataSchema =
         new Schema(
