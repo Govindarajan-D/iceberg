@@ -55,10 +55,12 @@ public class TestStructProjection {
     assertThat(projection.get(0, Integer.class)).isEqualTo(42);
 
     assertThatThrownBy(() -> projection.get(0, String.class))
-        .isInstanceOf(ClassCastException.class);
+        .isInstanceOf(ClassCastException.class)
+        .hasMessage("Cannot cast java.lang.Integer to java.lang.String");
 
     assertThatThrownBy(() -> projection.get(1, Integer.class))
-        .isInstanceOf(ArrayIndexOutOfBoundsException.class);
+        .isInstanceOf(ArrayIndexOutOfBoundsException.class)
+        .hasMessage("Index 1 out of bounds for length 1");
 
     assertThatThrownBy(() -> projection.set(0, 5))
         .isInstanceOf(UnsupportedOperationException.class)
@@ -144,8 +146,7 @@ public class TestStructProjection {
 
     assertThatThrownBy(() -> StructProjection.create(dataSchema.asStruct(), projectedStructType))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining(
-            "Cannot find field 20: name: optional string in struct<10: id: required long>");
+        .hasMessage("Cannot find field 20: name: optional string in struct<10: id: required long>");
   }
 
   @Test
