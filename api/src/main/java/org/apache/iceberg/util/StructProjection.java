@@ -123,7 +123,7 @@ public class StructProjection implements StructLike {
             case STRUCT:
               nestedProjections[pos] =
                   new StructProjection(
-                      dataField.type().asStructType(), projectedField.type().asStructType());
+                      dataField.type().asStructType(), projectedField.type().asStructType(), allowMissing);
               break;
             case MAP:
               MapType projectedMap = projectedField.type().asMapType();

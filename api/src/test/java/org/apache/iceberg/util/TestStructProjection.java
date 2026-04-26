@@ -343,6 +343,7 @@ public class TestStructProjection {
     projection.wrap(TestHelpers.Row.of(Map.of(key, "A Country")));
 
     assertThat(projection.size()).isEqualTo(1);
+    assertThat(projection.projectedFields()).isEqualTo(1);
     assertThat(projection.get(0, Map.class)).isEqualTo(Map.of(key, "A Country"));
   }
 
@@ -418,5 +419,38 @@ public class TestStructProjection {
     projection.wrap(row);
 
     assertThat(projection.get(0, StructLike.class)).isNull();
+  }
+
+  @Test
+  public void testCreateAllowMissingPropagatesAllowMissingToNestedStructs() {
+    StructType dataAddressType =
+            StructType.of(required(10, "street", Types.StringType.get()));
+
+    StructType projectedAddressType =
+            StructType.of(
+                    required(10, "street", Types.StringType.get()),
+                    Types.NestedField.optional(20, "city", Types.StringType.get()));
+
+    StructType dataStructType =
+            StructType.of(
+                    required(1, "id", Types.LongType.get()),
+                    required(2, "address", dataAddressType));
+
+    StructType projectedStructType =
+            StructType.of(
+                    required(1, "id", Types.LongType.get()),
+                    required(2, "address", projectedAddressType));
+
+    StructProjection projection =
+            StructProjection.createAllowMissing(dataStructType, projectedStructType);
+
+    TestHelpers.Row nestedRow = TestHelpers.Row.of("123 Main St");
+    TestHelpers.Row row = TestHelpers.Row.of(42L, nestedRow);
+    projection.wrap(row);
+
+    assertThat(projection.get(0, Long.class)).isEqualTo(42L);
+    StructLike addressProjection = projection.get(1, StructLike.class);
+    assertThat(addressProjection.get(0, String.class)).isEqualTo("123 Main St");
+    assertThat(addressProjection.get(1, String.class)).isNull();
   }
 }
