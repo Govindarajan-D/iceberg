@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 public class TestStructProjection {
   @Test
-  public void testProjectSubsetOfSchemaFields() {
+  public void projectSubsetOfSchemaFields() {
     Schema dataSchema =
         new Schema(
             required(10, "id", Types.LongType.get()),
@@ -68,7 +68,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testProjectNestedStructSubfields() {
+  public void projectNestedStructSubfields() {
     Schema dataSchema =
         new Schema(
             required(1, "id", Types.LongType.get()),
@@ -115,7 +115,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testCreateAllowMissingWithAbsentOptionalFieldReturnsNull() {
+  public void createAllowMissingWithAbsentOptionalFieldReturnsNull() {
     Schema dataSchema = new Schema(required(10, "id", Types.LongType.get()));
 
     StructType projectedStructType =
@@ -136,7 +136,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testCreateThrowsWhenOptionalFieldAbsent() {
+  public void createThrowsWhenOptionalFieldAbsent() {
     Schema dataSchema = new Schema(required(10, "id", Types.LongType.get()));
 
     StructType projectedStructType =
@@ -150,7 +150,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testCreateAllowMissingThrowsWhenRequiredFieldAbsent() {
+  public void createAllowMissingThrowsWhenRequiredFieldAbsent() {
     Schema dataSchema = new Schema(required(10, "id", Types.LongType.get()));
 
     StructType projectedStructType =
@@ -164,7 +164,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testCreateThrowsWhenRequiredFieldAbsent() {
+  public void createThrowsWhenRequiredFieldAbsent() {
     Schema dataSchema = new Schema(required(10, "id", Types.LongType.get()));
 
     StructType projectedStructType =
@@ -178,7 +178,7 @@ public class TestStructProjection {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testProjectMapWithNestedStructAndPrimitiveValues() {
+  public void projectMapWithNestedStructAndPrimitiveValues() {
     StructType coordinatesStruct =
         StructType.of(
             required(100, "latitude", Types.DoubleType.get()),
@@ -229,7 +229,7 @@ public class TestStructProjection {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testProjectListWithPrimitiveAndStructElements() {
+  public void projectListWithPrimitiveAndStructElements() {
     StructType elementStruct = StructType.of(required(200, "point", Types.DoubleType.get()));
     Schema dataSchema =
         new Schema(
@@ -253,7 +253,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testCreateProjectionFromFieldIds() {
+  public void createProjectionFromFieldIds() {
     Schema dataSchema =
         new Schema(
             required(10, "id", Types.LongType.get()),
@@ -272,7 +272,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testCopyForCreatesIndependentProjection() {
+  public void copyForCreatesIndependentProjection() {
     StructType dataSchema =
         StructType.of(
             required(10, "id", Types.LongType.get()),
@@ -296,7 +296,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testCreateThrowsForPartialMapValueStructProjection() {
+  public void createThrowsForPartialMapValueStructProjection() {
     Schema dataSchema =
         new Schema(
             required(1, "id", Types.LongType.get()),
@@ -328,7 +328,7 @@ public class TestStructProjection {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testProjectMapWithNestedStructKey() {
+  public void projectMapWithNestedStructKey() {
     StructType keyStruct = StructType.of(required(100, "region", Types.StringType.get()));
 
     Schema dataSchema =
@@ -348,7 +348,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testCreateThrowsForPartialMapKeyStructProjection() {
+  public void createThrowsForPartialMapKeyStructProjection() {
     Schema dataSchema =
         new Schema(
             required(
@@ -379,7 +379,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testCreateThrowsForPartialListElementStructProjection() {
+  public void createThrowsForPartialListElementStructProjection() {
     Schema dataSchema =
         new Schema(
             required(1, "id", Types.LongType.get()),
@@ -405,7 +405,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testGetReturnsNullForNullNestedStruct() {
+  public void getReturnsNullForNullNestedStruct() {
     Schema dataSchema =
         new Schema(
             required(1, "id", Types.LongType.get()),
@@ -422,7 +422,7 @@ public class TestStructProjection {
   }
 
   @Test
-  public void testCreateAllowMissingPropagatesAllowMissingToNestedStructs() {
+  public void createAllowMissingPropagatesAllowMissingToNestedStructs() {
     StructType dataAddressType = StructType.of(required(10, "street", Types.StringType.get()));
 
     StructType projectedAddressType =
