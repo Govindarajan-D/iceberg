@@ -53,14 +53,66 @@ public class TestStructProjection {
     assertThat(projection.size()).isEqualTo(1);
     assertThat(projection.projectedFields()).isEqualTo(1);
     assertThat(projection.get(0, Integer.class)).isEqualTo(42);
+  }
+
+  @Test
+  public void getThrowsClassCastExceptionForWrongType() {
+    Schema dataSchema =
+        new Schema(
+            required(10, "id", Types.LongType.get()),
+            required(20, "name", Types.StringType.get()),
+            required(30, "value", Types.IntegerType.get()));
+
+    Schema projectedSchema = new Schema(required(30, "value", Types.IntegerType.get()));
+
+    StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
+
+    assertThat(projection.get(0, Integer.class)).isNull();
+
+    TestHelpers.Row row = TestHelpers.Row.of(1L, "Batman", 42);
+    projection.wrap(row);
 
     assertThatThrownBy(() -> projection.get(0, String.class))
         .isInstanceOf(ClassCastException.class)
         .hasMessage("Cannot cast java.lang.Integer to java.lang.String");
+  }
+
+  @Test
+  public void getThrowsForOutOfBoundsIndex() {
+    Schema dataSchema =
+        new Schema(
+            required(10, "id", Types.LongType.get()),
+            required(20, "name", Types.StringType.get()),
+            required(30, "value", Types.IntegerType.get()));
+
+    Schema projectedSchema = new Schema(required(30, "value", Types.IntegerType.get()));
+
+    StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
+
+    TestHelpers.Row row = TestHelpers.Row.of(1L, "Batman", 42);
+    projection.wrap(row);
 
     assertThatThrownBy(() -> projection.get(1, Integer.class))
         .isInstanceOf(ArrayIndexOutOfBoundsException.class)
         .hasMessage("Index 1 out of bounds for length 1");
+  }
+
+  @Test
+  public void setOnProjectionThrows() {
+    Schema dataSchema =
+        new Schema(
+            required(10, "id", Types.LongType.get()),
+            required(20, "name", Types.StringType.get()),
+            required(30, "value", Types.IntegerType.get()));
+
+    Schema projectedSchema = new Schema(required(30, "value", Types.IntegerType.get()));
+
+    StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
+
+    assertThat(projection.get(0, Integer.class)).isNull();
+
+    TestHelpers.Row row = TestHelpers.Row.of(1L, "Batman", 42);
+    projection.wrap(row);
 
     assertThatThrownBy(() -> projection.set(0, 5))
         .isInstanceOf(UnsupportedOperationException.class)
