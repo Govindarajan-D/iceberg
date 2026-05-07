@@ -28,7 +28,13 @@ import java.util.Set;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.TestHelpers;
-import org.apache.iceberg.types.Types;
+import org.apache.iceberg.types.Types.DoubleType;
+import org.apache.iceberg.types.Types.IntegerType;
+import org.apache.iceberg.types.Types.ListType;
+import org.apache.iceberg.types.Types.LongType;
+import org.apache.iceberg.types.Types.MapType;
+import org.apache.iceberg.types.Types.NestedField;
+import org.apache.iceberg.types.Types.StringType;
 import org.apache.iceberg.types.Types.StructType;
 import org.junit.jupiter.api.Test;
 
@@ -37,11 +43,11 @@ public class TestStructProjection {
   public void projectSubsetOfSchemaFields() {
     Schema dataSchema =
         new Schema(
-            required(10, "id", Types.LongType.get()),
-            required(20, "name", Types.StringType.get()),
-            required(30, "value", Types.IntegerType.get()));
+            required(10, "id", LongType.get()),
+            required(20, "name", StringType.get()),
+            required(30, "value", IntegerType.get()));
 
-    Schema projectedSchema = new Schema(required(30, "value", Types.IntegerType.get()));
+    Schema projectedSchema = new Schema(required(30, "value", IntegerType.get()));
 
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
 
@@ -59,11 +65,11 @@ public class TestStructProjection {
   public void getThrowsClassCastExceptionForWrongType() {
     Schema dataSchema =
         new Schema(
-            required(10, "id", Types.LongType.get()),
-            required(20, "name", Types.StringType.get()),
-            required(30, "value", Types.IntegerType.get()));
+            required(10, "id", LongType.get()),
+            required(20, "name", StringType.get()),
+            required(30, "value", IntegerType.get()));
 
-    Schema projectedSchema = new Schema(required(30, "value", Types.IntegerType.get()));
+    Schema projectedSchema = new Schema(required(30, "value", IntegerType.get()));
 
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
 
@@ -81,11 +87,11 @@ public class TestStructProjection {
   public void getThrowsForOutOfBoundsIndex() {
     Schema dataSchema =
         new Schema(
-            required(10, "id", Types.LongType.get()),
-            required(20, "name", Types.StringType.get()),
-            required(30, "value", Types.IntegerType.get()));
+            required(10, "id", LongType.get()),
+            required(20, "name", StringType.get()),
+            required(30, "value", IntegerType.get()));
 
-    Schema projectedSchema = new Schema(required(30, "value", Types.IntegerType.get()));
+    Schema projectedSchema = new Schema(required(30, "value", IntegerType.get()));
 
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
 
@@ -101,11 +107,11 @@ public class TestStructProjection {
   public void setOnProjectionThrows() {
     Schema dataSchema =
         new Schema(
-            required(10, "id", Types.LongType.get()),
-            required(20, "name", Types.StringType.get()),
-            required(30, "value", Types.IntegerType.get()));
+            required(10, "id", LongType.get()),
+            required(20, "name", StringType.get()),
+            required(30, "value", IntegerType.get()));
 
-    Schema projectedSchema = new Schema(required(30, "value", Types.IntegerType.get()));
+    Schema projectedSchema = new Schema(required(30, "value", IntegerType.get()));
 
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
 
@@ -123,18 +129,18 @@ public class TestStructProjection {
   public void projectNestedStructSubfields() {
     Schema dataSchema =
         new Schema(
-            required(1, "id", Types.LongType.get()),
+            required(1, "id", LongType.get()),
             required(
                 2,
                 "address",
                 StructType.of(
-                    required(10, "street", Types.StringType.get()),
+                    required(10, "street", StringType.get()),
                     required(
                         20,
                         "coordinates",
                         StructType.of(
-                            required(100, "latitude", Types.DoubleType.get()),
-                            required(200, "longitude", Types.DoubleType.get()))))));
+                            required(100, "latitude", DoubleType.get()),
+                            required(200, "longitude", DoubleType.get()))))));
 
     Schema projectedSchema =
         new Schema(
@@ -145,7 +151,7 @@ public class TestStructProjection {
                     required(
                         20,
                         "coordinates",
-                        StructType.of(required(200, "longitude", Types.DoubleType.get()))))));
+                        StructType.of(required(200, "longitude", DoubleType.get()))))));
 
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
 
@@ -168,12 +174,11 @@ public class TestStructProjection {
 
   @Test
   public void createAllowMissingWithAbsentOptionalFieldReturnsNull() {
-    Schema dataSchema = new Schema(required(10, "id", Types.LongType.get()));
+    Schema dataSchema = new Schema(required(10, "id", LongType.get()));
 
     StructType projectedStructType =
         StructType.of(
-            required(10, "id", Types.LongType.get()),
-            Types.NestedField.optional(20, "name", Types.StringType.get()));
+            required(10, "id", LongType.get()), NestedField.optional(20, "name", StringType.get()));
 
     StructProjection projection =
         StructProjection.createAllowMissing(dataSchema.asStruct(), projectedStructType);
@@ -189,12 +194,11 @@ public class TestStructProjection {
 
   @Test
   public void createThrowsWhenOptionalFieldAbsent() {
-    Schema dataSchema = new Schema(required(10, "id", Types.LongType.get()));
+    Schema dataSchema = new Schema(required(10, "id", LongType.get()));
 
     StructType projectedStructType =
         StructType.of(
-            required(10, "id", Types.LongType.get()),
-            Types.NestedField.optional(20, "name", Types.StringType.get()));
+            required(10, "id", LongType.get()), NestedField.optional(20, "name", StringType.get()));
 
     assertThatThrownBy(() -> StructProjection.create(dataSchema.asStruct(), projectedStructType))
         .isInstanceOf(IllegalArgumentException.class)
@@ -203,11 +207,10 @@ public class TestStructProjection {
 
   @Test
   public void createAllowMissingThrowsWhenRequiredFieldAbsent() {
-    Schema dataSchema = new Schema(required(10, "id", Types.LongType.get()));
+    Schema dataSchema = new Schema(required(10, "id", LongType.get()));
 
     StructType projectedStructType =
-        StructType.of(
-            required(10, "id", Types.LongType.get()), required(20, "name", Types.StringType.get()));
+        StructType.of(required(10, "id", LongType.get()), required(20, "name", StringType.get()));
 
     assertThatThrownBy(
             () -> StructProjection.createAllowMissing(dataSchema.asStruct(), projectedStructType))
@@ -217,11 +220,10 @@ public class TestStructProjection {
 
   @Test
   public void createThrowsWhenRequiredFieldAbsent() {
-    Schema dataSchema = new Schema(required(10, "id", Types.LongType.get()));
+    Schema dataSchema = new Schema(required(10, "id", LongType.get()));
 
     StructType projectedStructType =
-        StructType.of(
-            required(10, "id", Types.LongType.get()), required(20, "name", Types.StringType.get()));
+        StructType.of(required(10, "id", LongType.get()), required(20, "name", StringType.get()));
 
     assertThatThrownBy(() -> StructProjection.create(dataSchema.asStruct(), projectedStructType))
         .isInstanceOf(IllegalArgumentException.class)
@@ -233,30 +235,18 @@ public class TestStructProjection {
   public void projectMapWithNestedStructAndPrimitiveValues() {
     StructType coordinatesStruct =
         StructType.of(
-            required(100, "latitude", Types.DoubleType.get()),
-            required(200, "longitude", Types.DoubleType.get()));
+            required(100, "latitude", DoubleType.get()),
+            required(200, "longitude", DoubleType.get()));
 
     Schema dataSchema =
         new Schema(
-            required(1, "id", Types.LongType.get()),
-            required(
-                2,
-                "address",
-                Types.MapType.ofRequired(3, 4, Types.StringType.get(), coordinatesStruct)),
-            required(
-                5,
-                "metadata",
-                Types.MapType.ofRequired(6, 7, Types.StringType.get(), Types.StringType.get())));
+            required(1, "id", LongType.get()),
+            required(2, "address", MapType.ofRequired(3, 4, StringType.get(), coordinatesStruct)),
+            required(5, "metadata", MapType.ofRequired(6, 7, StringType.get(), StringType.get())));
     Schema projectedSchema =
         new Schema(
-            required(
-                2,
-                "address",
-                Types.MapType.ofRequired(3, 4, Types.StringType.get(), coordinatesStruct)),
-            required(
-                5,
-                "metadata",
-                Types.MapType.ofRequired(6, 7, Types.StringType.get(), Types.StringType.get())));
+            required(2, "address", MapType.ofRequired(3, 4, StringType.get(), coordinatesStruct)),
+            required(5, "metadata", MapType.ofRequired(6, 7, StringType.get(), StringType.get())));
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
 
     TestHelpers.Row coordinates = TestHelpers.Row.of(42.00, 24.00);
@@ -282,16 +272,16 @@ public class TestStructProjection {
   @Test
   @SuppressWarnings("unchecked")
   public void projectListWithPrimitiveAndStructElements() {
-    StructType elementStruct = StructType.of(required(200, "point", Types.DoubleType.get()));
+    StructType elementStruct = StructType.of(required(200, "point", DoubleType.get()));
     Schema dataSchema =
         new Schema(
-            required(1, "id", Types.LongType.get()),
-            required(2, "numbers", Types.ListType.ofRequired(3, Types.StringType.get())),
-            required(4, "points", Types.ListType.ofRequired(5, elementStruct)));
+            required(1, "id", LongType.get()),
+            required(2, "numbers", ListType.ofRequired(3, StringType.get())),
+            required(4, "points", ListType.ofRequired(5, elementStruct)));
     Schema projectedSchema =
         new Schema(
-            required(2, "numbers", Types.ListType.ofRequired(3, Types.StringType.get())),
-            required(4, "points", Types.ListType.ofRequired(5, elementStruct)));
+            required(2, "numbers", ListType.ofRequired(3, StringType.get())),
+            required(4, "points", ListType.ofRequired(5, elementStruct)));
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
 
     TestHelpers.Row points = TestHelpers.Row.of(1.0, 2.0);
@@ -308,9 +298,9 @@ public class TestStructProjection {
   public void createProjectionFromFieldIds() {
     Schema dataSchema =
         new Schema(
-            required(10, "id", Types.LongType.get()),
-            required(20, "name", Types.StringType.get()),
-            required(30, "value", Types.IntegerType.get()));
+            required(10, "id", LongType.get()),
+            required(20, "name", StringType.get()),
+            required(30, "value", IntegerType.get()));
 
     StructProjection projection = StructProjection.create(dataSchema, Set.of(30, 20));
 
@@ -327,11 +317,11 @@ public class TestStructProjection {
   public void copyForCreatesIndependentProjection() {
     StructType dataSchema =
         StructType.of(
-            required(10, "id", Types.LongType.get()),
-            required(20, "name", Types.StringType.get()),
-            required(30, "value", Types.IntegerType.get()));
+            required(10, "id", LongType.get()),
+            required(20, "name", StringType.get()),
+            required(30, "value", IntegerType.get()));
 
-    StructType projectedSchema = StructType.of(required(30, "value", Types.IntegerType.get()));
+    StructType projectedSchema = StructType.of(required(30, "value", IntegerType.get()));
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
 
     TestHelpers.Row row1 = TestHelpers.Row.of(1L, "Batman", 42);
@@ -351,27 +341,27 @@ public class TestStructProjection {
   public void createThrowsForPartialMapValueStructProjection() {
     Schema dataSchema =
         new Schema(
-            required(1, "id", Types.LongType.get()),
+            required(1, "id", LongType.get()),
             required(
                 2,
                 "address",
-                Types.MapType.ofRequired(
+                MapType.ofRequired(
                     3,
                     4,
-                    Types.StringType.get(),
+                    StringType.get(),
                     StructType.of(
-                        required(100, "latitude", Types.DoubleType.get()),
-                        required(200, "longitude", Types.DoubleType.get())))));
+                        required(100, "latitude", DoubleType.get()),
+                        required(200, "longitude", DoubleType.get())))));
     Schema projectedSchema =
         new Schema(
             required(
                 2,
                 "address",
-                Types.MapType.ofRequired(
+                MapType.ofRequired(
                     3,
                     4,
-                    Types.StringType.get(),
-                    StructType.of(required(200, "longitude", Types.DoubleType.get())))));
+                    StringType.get(),
+                    StructType.of(required(200, "longitude", DoubleType.get())))));
 
     assertThatThrownBy(() -> StructProjection.create(dataSchema, projectedSchema))
         .isInstanceOf(IllegalArgumentException.class)
@@ -381,14 +371,12 @@ public class TestStructProjection {
   @Test
   @SuppressWarnings("unchecked")
   public void projectMapWithNestedStructKey() {
-    StructType keyStruct = StructType.of(required(100, "region", Types.StringType.get()));
+    StructType keyStruct = StructType.of(required(100, "region", StringType.get()));
 
     Schema dataSchema =
-        new Schema(
-            required(2, "data", Types.MapType.ofRequired(3, 4, keyStruct, Types.StringType.get())));
+        new Schema(required(2, "data", MapType.ofRequired(3, 4, keyStruct, StringType.get())));
     Schema projectedSchema =
-        new Schema(
-            required(2, "data", Types.MapType.ofRequired(3, 4, keyStruct, Types.StringType.get())));
+        new Schema(required(2, "data", MapType.ofRequired(3, 4, keyStruct, StringType.get())));
 
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
     TestHelpers.Row key = TestHelpers.Row.of("US");
@@ -406,24 +394,24 @@ public class TestStructProjection {
             required(
                 1,
                 "delivery_map",
-                Types.MapType.ofRequired(
+                MapType.ofRequired(
                     2,
                     3,
                     StructType.of(
-                        required(100, "city", Types.StringType.get()),
-                        required(101, "zip", Types.IntegerType.get())),
-                    Types.StringType.get())));
+                        required(100, "city", StringType.get()),
+                        required(101, "zip", IntegerType.get())),
+                    StringType.get())));
 
     Schema projectedSchema =
         new Schema(
             required(
                 1,
                 "delivery_map",
-                Types.MapType.ofRequired(
+                MapType.ofRequired(
                     2,
                     3,
-                    StructType.of(required(100, "city", Types.StringType.get())),
-                    Types.StringType.get())));
+                    StructType.of(required(100, "city", StringType.get())),
+                    StringType.get())));
 
     assertThatThrownBy(() -> StructProjection.create(dataSchema, projectedSchema))
         .isInstanceOf(IllegalArgumentException.class)
@@ -434,22 +422,22 @@ public class TestStructProjection {
   public void createThrowsForPartialListElementStructProjection() {
     Schema dataSchema =
         new Schema(
-            required(1, "id", Types.LongType.get()),
+            required(1, "id", LongType.get()),
             required(
                 2,
                 "address",
-                Types.ListType.ofRequired(
+                ListType.ofRequired(
                     3,
                     StructType.of(
-                        required(100, "latitude", Types.DoubleType.get()),
-                        required(200, "longitude", Types.DoubleType.get())))));
+                        required(100, "latitude", DoubleType.get()),
+                        required(200, "longitude", DoubleType.get())))));
     Schema projectedSchema =
         new Schema(
             required(
                 2,
                 "address",
-                Types.ListType.ofRequired(
-                    3, StructType.of(required(200, "longitude", Types.DoubleType.get())))));
+                ListType.ofRequired(
+                    3, StructType.of(required(200, "longitude", DoubleType.get())))));
 
     assertThatThrownBy(() -> StructProjection.create(dataSchema, projectedSchema))
         .isInstanceOf(IllegalArgumentException.class)
@@ -460,11 +448,10 @@ public class TestStructProjection {
   public void getReturnsNullForNullNestedStruct() {
     Schema dataSchema =
         new Schema(
-            required(1, "id", Types.LongType.get()),
-            required(2, "address", StructType.of(required(10, "street", Types.StringType.get()))));
+            required(1, "id", LongType.get()),
+            required(2, "address", StructType.of(required(10, "street", StringType.get()))));
     Schema projectedSchema =
-        new Schema(
-            required(2, "address", StructType.of(required(10, "street", Types.StringType.get()))));
+        new Schema(required(2, "address", StructType.of(required(10, "street", StringType.get()))));
 
     StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
     TestHelpers.Row row = TestHelpers.Row.of(1L, null);
@@ -475,20 +462,19 @@ public class TestStructProjection {
 
   @Test
   public void createAllowMissingPropagatesAllowMissingToNestedStructs() {
-    StructType dataAddressType = StructType.of(required(10, "street", Types.StringType.get()));
+    StructType dataAddressType = StructType.of(required(10, "street", StringType.get()));
 
     StructType projectedAddressType =
         StructType.of(
-            required(10, "street", Types.StringType.get()),
-            Types.NestedField.optional(20, "city", Types.StringType.get()));
+            required(10, "street", StringType.get()),
+            NestedField.optional(20, "city", StringType.get()));
 
     StructType dataStructType =
-        StructType.of(
-            required(1, "id", Types.LongType.get()), required(2, "address", dataAddressType));
+        StructType.of(required(1, "id", LongType.get()), required(2, "address", dataAddressType));
 
     StructType projectedStructType =
         StructType.of(
-            required(1, "id", Types.LongType.get()), required(2, "address", projectedAddressType));
+            required(1, "id", LongType.get()), required(2, "address", projectedAddressType));
 
     StructProjection projection =
         StructProjection.createAllowMissing(dataStructType, projectedStructType);
