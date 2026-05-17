@@ -375,10 +375,8 @@ public class TestStructProjection {
 
     Schema dataSchema =
         new Schema(required(2, "data", MapType.ofRequired(3, 4, keyStruct, StringType.get())));
-    Schema projectedSchema =
-        new Schema(required(2, "data", MapType.ofRequired(3, 4, keyStruct, StringType.get())));
 
-    StructProjection projection = StructProjection.create(dataSchema, projectedSchema);
+    StructProjection projection = StructProjection.create(dataSchema, dataSchema);
     TestHelpers.Row key = TestHelpers.Row.of("US");
     projection.wrap(TestHelpers.Row.of(Map.of(key, "A Country")));
 
